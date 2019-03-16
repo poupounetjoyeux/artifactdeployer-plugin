@@ -36,6 +36,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.plugins.artifactdeployer.service.ArtifactDeployerCopy;
 import org.jenkinsci.plugins.artifactdeployer.service.ArtifactDeployerManager;
 import org.jenkinsci.plugins.artifactdeployer.service.DeployedArtifactsActionManager;
@@ -43,6 +44,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -52,7 +54,7 @@ import java.util.logging.Logger;
 /**
  * @author Gregory Boissinot
  */
-public class ArtifactDeployerPublisher extends Recorder implements MatrixAggregatable, Serializable {
+public class ArtifactDeployerPublisher extends Recorder implements MatrixAggregatable, Serializable, SimpleBuildStep {
 
     private List<ArtifactDeployerEntry> entries = Collections.emptyList();
     private boolean deployEvenBuildFail;
@@ -257,6 +259,16 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
 
     public void setDeployEvenBuildFail(boolean deployEvenBuildFail) {
         this.deployEvenBuildFail = deployEvenBuildFail;
+    }
+
+    @Override
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
+        if(!(run instanceof AbstractBuild) || !(taskListener instanceof  BuildListener))
+        {
+            return;
+        }
+
+        _perform((AbstractBuild)run, launcher, (BuildListener)taskListener);
     }
 
     @Extension
