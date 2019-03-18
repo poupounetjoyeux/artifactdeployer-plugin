@@ -262,14 +262,7 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
 
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-        taskListener.getLogger().print("Starting perform for ArtifactDeployer");
-        if(!(run instanceof AbstractBuild) || !(taskListener instanceof  BuildListener))
-        {
-            taskListener.getLogger().print("ArtifactDeployer cannot be performed");
-            return;
-        }
-
-        _perform((AbstractBuild)run, launcher, (BuildListener)taskListener);
+        _perform((AbstractBuild<?,?>)run, launcher, (BuildListener)taskListener);
     }
 
     @Extension
