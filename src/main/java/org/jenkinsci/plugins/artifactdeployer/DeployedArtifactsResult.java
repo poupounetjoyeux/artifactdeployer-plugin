@@ -23,6 +23,7 @@
 package org.jenkinsci.plugins.artifactdeployer;
 
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -42,7 +43,7 @@ public class DeployedArtifactsResult {
         this.artifactDeployerBuildAction = artifactDeployerBuildAction;
     }
 
-    public AbstractBuild<?, ?> getOwner() {
+    public Run getOwner() {
         return artifactDeployerBuildAction.getOwner();
     }
 

@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.artifactdeployer.service;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.artifactdeployer.ArtifactDeployerVO;
@@ -40,7 +41,7 @@ import java.util.List;
  */
 public class ArtifactDeployerCopy implements FilePath.FileCallable<List<ArtifactDeployerVO>> {
 
-    private BuildListener listener;
+    private TaskListener listener;
 
     private String includes;
 
@@ -52,7 +53,7 @@ public class ArtifactDeployerCopy implements FilePath.FileCallable<List<Artifact
 
     private int numberOfCurrentDeployedArtifacts;
 
-    public ArtifactDeployerCopy(BuildListener listener, String includes, String excludes, boolean flatten, FilePath outputFilePath, int numberOfCurrentDeployedArtifacts) {
+    public ArtifactDeployerCopy(TaskListener listener, String includes, String excludes, boolean flatten, FilePath outputFilePath, int numberOfCurrentDeployedArtifacts) {
         this.listener = listener;
         this.includes = includes;
         this.excludes = excludes;

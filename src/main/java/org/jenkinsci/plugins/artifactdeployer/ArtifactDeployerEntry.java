@@ -31,6 +31,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -188,6 +189,7 @@ public class ArtifactDeployerEntry extends AbstractDescribableImpl<ArtifactDeplo
         return result;
     }
 
+    @Symbol("deployEntry")
     @Extension
     public static final class ArtifactDeployerEntryDescriptor extends Descriptor<ArtifactDeployerEntry> {
 

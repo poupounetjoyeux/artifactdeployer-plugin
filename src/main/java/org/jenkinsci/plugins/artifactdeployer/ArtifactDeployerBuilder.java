@@ -22,8 +22,6 @@
  */
 package org.jenkinsci.plugins.artifactdeployer;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;

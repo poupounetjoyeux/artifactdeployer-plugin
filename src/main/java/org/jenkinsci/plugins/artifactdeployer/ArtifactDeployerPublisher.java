@@ -22,8 +22,6 @@
  */
 package org.jenkinsci.plugins.artifactdeployer;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -37,6 +35,7 @@ import hudson.tasks.Recorder;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import jenkins.tasks.SimpleBuildStep;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.artifactdeployer.service.ArtifactDeployerCopy;
 import org.jenkinsci.plugins.artifactdeployer.service.ArtifactDeployerManager;
 import org.jenkinsci.plugins.artifactdeployer.service.DeployedArtifactsActionManager;
@@ -44,7 +43,6 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
@@ -86,7 +84,8 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
 
             @Override
             public boolean endRun(MatrixRun run) throws InterruptedException, IOException {
-                boolean result = _perform(run, launcher, listener);
+                FilePath workspace = run.getWorkspace();
+                boolean result = _perform(run, workspace, launcher, listener);
                 run.save();
                 return result;
             }
@@ -95,15 +94,16 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
     }
 
     @Override
-    public boolean perform(hudson.model.AbstractBuild<?, ?> build, hudson.Launcher launcher, hudson.model.BuildListener listener) throws java.lang.InterruptedException, java.io.IOException {
+    public boolean perform(hudson.model.AbstractBuild<?, ?> build, hudson.Launcher launcher, hudson.model.BuildListener listener) throws java.lang.InterruptedException, IOException {
         if (!(build.getProject() instanceof MatrixConfiguration)) {
-            return _perform(build, launcher, listener);
+            FilePath workspace = build.getWorkspace();
+            return _perform(build, workspace, launcher, listener);
         }
         return true;
     }
 
 
-    private boolean isPerformDeployment(AbstractBuild build) {
+    private boolean isPerformDeployment(Run build) {
         Result result = build.getResult();
 
         if (deployEvenBuildFail) {
@@ -118,7 +118,7 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
         }
     }
 
-    private boolean _perform(hudson.model.AbstractBuild<?, ?> build, hudson.Launcher launcher, hudson.model.BuildListener listener) throws java.lang.InterruptedException, java.io.IOException {
+    private boolean _perform(Run build, FilePath workspace, Launcher launcher, TaskListener listener) {
 
         if (isPerformDeployment(build)) {
 
@@ -128,7 +128,7 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
             Map<Integer, List<ArtifactDeployerVO>> deployedArtifacts;
             try {
                 int currentTotalDeployedCounter = artifactDeployerBuildActionAction.getDeployedArtifactsInfo().size();
-                deployedArtifacts = processDeployment(build, listener, currentTotalDeployedCounter);
+                deployedArtifacts = processDeployment(build, workspace, listener, currentTotalDeployedCounter);
             } catch (ArtifactDeployerException ae) {
                 listener.getLogger().println("[ArtifactDeployer] - [ERROR] - Failed to deploy. " + ae.getMessage());
                 if (ae.getCause() != null) {
@@ -144,10 +144,15 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
         return true;
     }
 
-    private Map<Integer, List<ArtifactDeployerVO>> processDeployment(AbstractBuild<?, ?> build, final BuildListener listener, int currentNbDeployedArtifacts) throws ArtifactDeployerException {
+    private Map<Integer, List<ArtifactDeployerVO>> processDeployment(Run build, FilePath workspace, final TaskListener listener, int currentNbDeployedArtifacts) throws ArtifactDeployerException {
 
-        Map<Integer, List<ArtifactDeployerVO>> deployedArtifacts = new HashMap<Integer, List<ArtifactDeployerVO>>();
-        FilePath workspace = build.getWorkspace();
+        Map<Integer, List<ArtifactDeployerVO>> deployedArtifacts = new HashMap<>();
+
+        if(workspace == null)
+        {
+            throw new ArtifactDeployerException("We were not able to get the workspace");
+        }
+
 
         int numberOfCurrentDeployedArtifacts = currentNbDeployedArtifacts;
         for (final ArtifactDeployerEntry entry : entries) {
@@ -261,8 +266,8 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
     }
 
     @Override
-    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-        _perform((AbstractBuild<?,?>)run, launcher, (BuildListener)taskListener);
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
+        _perform(run, workspace, launcher, taskListener);
     }
 
     @Extension
@@ -336,7 +341,7 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
         }
     }
 
-
+    @Symbol("artifactDeploy")
     @Extension
     @SuppressWarnings("unused")
     public static final class ArtifactDeployerDescriptor extends BuildStepDescriptor<Publisher> {
