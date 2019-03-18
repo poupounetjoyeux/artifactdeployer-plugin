@@ -22,15 +22,26 @@
  */
 package org.jenkinsci.plugins.artifactdeployer;
 
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractProject;
+import hudson.model.Descriptor;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Publisher;
+import hudson.util.FormValidation;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
  * @author Gregory Boissinot
  */
-public class ArtifactDeployerEntry implements Serializable {
+public class ArtifactDeployerEntry extends AbstractDescribableImpl<ArtifactDeployerEntry> implements Serializable {
 
     static final long serialVersionUID = 1L;
 
@@ -175,6 +186,17 @@ public class ArtifactDeployerEntry implements Serializable {
         result = 31 * result + (groovyExpression != null ? groovyExpression.hashCode() : 0);
         result = 31 * result + (failNoFilesDeploy ? 1 : 0);
         return result;
+    }
+
+    @Extension
+    public static final class ArtifactDeployerEntryDescriptor extends Descriptor<ArtifactDeployerEntry> {
+
+        public static final String DISPLAY_NAME = Messages.depployerartifact_displayName();
+
+        @Override
+        public String getDisplayName() {
+            return DISPLAY_NAME;
+        }
     }
 
 }

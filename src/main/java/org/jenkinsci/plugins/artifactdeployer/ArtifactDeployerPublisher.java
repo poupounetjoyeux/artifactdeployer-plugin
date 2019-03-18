@@ -44,6 +44,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
@@ -60,11 +61,9 @@ public class ArtifactDeployerPublisher extends Recorder implements MatrixAggrega
     private boolean deployEvenBuildFail;
 
     @DataBoundConstructor
-    public ArtifactDeployerPublisher(List<ArtifactDeployerEntry> deployedArtifact, boolean deployEvenBuildFail) {
-        this.entries = deployedArtifact;
+    public ArtifactDeployerPublisher(ArtifactDeployerEntry[] deployedArtifact, boolean deployEvenBuildFail) {
+        this.entries = Arrays.asList(deployedArtifact);
         this.deployEvenBuildFail = deployEvenBuildFail;
-        if (this.entries == null)
-            this.entries = Collections.emptyList();
     }
 
     public Object readResolve() {
